@@ -24,8 +24,13 @@ function App() {
   }
 
   const [userProfiles, setUserProfiles] = useState<Array<UserProfile2>>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   const onClickFetchUser = () => {
+    setLoading(true);
+    setError(false);
+
     axios.get<Array<UserProf>>("https://jsonplaceholder.typicode.com/users").then((res) => {
       const data = res.data.map((user) => ({
         id: user.id,
@@ -35,6 +40,12 @@ function App() {
       }));
       setUserProfiles(data);
     })
+    .catch(() => {
+      setError(true);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
   }
   return (
     <div className="App">
@@ -47,9 +58,17 @@ function App() {
       <br />
       <br />
       <button onClick={onClickFetchUser}>データ取得</button>
-      {userProfiles.map((user) => (
-        <UserCard key={user.id} user={user} />
-      ))}
+      {error ? (
+        <p style={{ color: "red" }}>データの取得に失敗しました</p>
+      ): loading ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          {userProfiles.map((user) => (
+            <UserCard key={user.id} user={user} />
+          ))}
+        </>
+      )}
     </div>
   );
 }
